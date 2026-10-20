@@ -44,5 +44,6 @@ next-env.d.ts
 .claude/settings.local.json
 CLAUDE.local.md
 
-# product spec (kept local for now)
+# product spec and task list (kept local for now)
 SPEC.md
+TASKS.md
