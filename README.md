@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Doggie Daycare
+
+a.k.a. "Coding with Claude"
+
+A dog walking and daycare reservation service, built with [Claude Code](https://claude.com/claude-code).
+
+Dog owners book **dog walks** with a specific walker in 30-minute slots, or **day care** for whole days (07:30–17:00) with limited capacity. Walkers manage their own availability and schedule. Admins manage walkers, roles and day care capacity.
+
+> **Status:** early proof of concept. The project scaffold and dependencies are in place; features are being built milestone by milestone (see [Roadmap](#roadmap)).
+
+## Features (POC)
+
+- Email/password sign-in with three roles: **owner**, **walker** and **admin**
+- Walk booking on a 30-minute slot grid; consecutive slots form one walk, up to 3 dogs per walk
+- Whole-day day care booking with admin-configurable capacity per date
+- Double-booking prevented at the database level
+- Confirmation and cancellation emails
+
+## Tech Stack
+
+| Concern | Choice |
+|---|---|
+| Framework | [Next.js](https://nextjs.org) 16 (App Router), React 19, TypeScript |
+| Styling | Tailwind CSS v4 |
+| Auth | [Better Auth](https://www.better-auth.com) with the `admin` plugin |
+| Database | PostgreSQL 17 |
+| ORM | [Drizzle ORM](https://orm.drizzle.team) + drizzle-kit |
+| Validation | Zod |
+| Dates / time zones | date-fns + @date-fns/tz |
+| Email | React Email; Mailpit locally, Resend in production |
+| Testing | Vitest, Playwright |
+
+## Prerequisites
+
+- Node.js 24+ and npm
+- Docker (for local PostgreSQL and Mailpit)
 
 ## Getting Started
 
-First, run the development server:
+Install dependencies and run the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Local services (coming in M1)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The app will run fully locally with Docker:
 
-## Learn More
+| Service | Address |
+|---|---|
+| PostgreSQL | `localhost:5432` |
+| Mailpit (SMTP) | `localhost:1025` |
+| Mailpit (web UI, view sent emails) | [http://localhost:8025](http://localhost:8025) |
 
-To learn more about Next.js, take a look at the following resources:
+Planned workflow once the database setup lands:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:up        # start Postgres + Mailpit
+npm run db:migrate   # apply migrations
+npm run db:seed      # create the first admin user
+npm run dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Environment variables
 
-## Deploy on Vercel
+Configuration will be read from `.env.local` (git-ignored) and validated at startup:
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Variable | Local value |
+|---|---|
+| `DATABASE_URL` | `postgres://dogapp:dogapp@localhost:5432/dogapp` |
+| `BETTER_AUTH_SECRET` | random string, 32+ characters |
+| `BETTER_AUTH_URL` | `http://localhost:3000` |
+| `BUSINESS_TIMEZONE` | e.g. `Europe/Helsinki` |
+| `EMAIL_TRANSPORT` | `smtp` |
+| `SMTP_HOST` / `SMTP_PORT` | `localhost` / `1025` |
+| `EMAIL_FROM` | `bookings@localhost` |
+| `SEED_ADMIN_EMAIL` / `SEED_ADMIN_PASSWORD` | credentials for the first admin |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Scripts
+
+| Script | Description |
+|---|---|
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | Run ESLint |
+
+Database, auth schema and test scripts (`db:*`, `auth:schema`, `test`, `e2e`) will be added in M1.
+
+Dependencies are pinned to exact versions (`save-exact=true` in `.npmrc`).
+
+## Roadmap
+
+| # | Deliverable |
+|---|---|
+| M1 | Project scaffold, Docker, Drizzle, Better Auth email/password, seed admin |
+| M2 | Dogs CRUD, admin user list + promote to walker |
+| M3 | Walker availability (weekly + exceptions), slot computation |
+| M4 | Walk booking + constraints + confirmation email |
+| M5 | Day care booking + capacity admin |
+| M6 | Reservations list, cancellation, walker schedule |
+| M7 | Tests, polish, Vercel deploy |
+| Later | Social login, reviews, walker photos, payments, calendar export |
+
+## Working with Claude
+
+- `CLAUDE.md` / `AGENTS.md` — project instructions for Claude Code
+- `.claude/` — shared agents, skills, and settings
+
+Personal settings (`.claude/settings.local.json`, `CLAUDE.local.md`) are git-ignored.
